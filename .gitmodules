@@ -1,0 +1,6 @@
+[submodule "FlightDynamics/external/imgui"]
+	path = FlightDynamics/external/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "FlightDynamics/external/SDL3"]
+	path = FlightDynamics/external/SDL3
+	url = https://github.com/libsdl-org/SDL.git
