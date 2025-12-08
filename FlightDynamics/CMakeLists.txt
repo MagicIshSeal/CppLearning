@@ -13,6 +13,23 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Enable testing
 enable_testing()
 
+# SDL3 Setup
+set(SDL3_DIR ${CMAKE_SOURCE_DIR}/external/SDL2)
+set(SDL3_INCLUDE_DIR ${SDL3_DIR}/include)
+set(SDL3_LIB_DIR ${SDL3_DIR}/lib/x64)
+
+# ImGui Setup
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
+set(IMGUI_SOURCES
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
 # Source files
 set(ATMOSPHERE_SRC src/atmosphere.cpp)
 set(AERO_SRC src/aero.cpp)
@@ -38,6 +55,27 @@ target_include_directories(integrator PUBLIC src)
 add_executable(FlightDynamics src/main.cpp)
 target_link_libraries(FlightDynamics atmosphere aero integrator)
 target_include_directories(FlightDynamics PRIVATE src)
+
+# GUI executable with ImGui
+add_executable(FlightDynamicsGUI src/main_gui.cpp ${IMGUI_SOURCES})
+target_link_libraries(FlightDynamicsGUI 
+    atmosphere aero integrator
+    ${SDL3_LIB_DIR}/SDL3.lib
+    opengl32
+)
+target_include_directories(FlightDynamicsGUI PRIVATE 
+    src 
+    ${SDL3_INCLUDE_DIR}
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+
+# Copy SDL3.dll to build directory
+add_custom_command(TARGET FlightDynamicsGUI POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${SDL3_LIB_DIR}/SDL3.dll
+    $<TARGET_FILE_DIR:FlightDynamicsGUI>
+)
 
 # Atmosphere tests
 add_executable(atmos_tests tests/atmos_tests.cpp)
