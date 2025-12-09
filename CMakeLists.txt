@@ -118,3 +118,23 @@ add_custom_command(
     COMMENT "Running tests after build..."
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+# Installation rules for creating releases
+install(TARGETS FlightDynamicsGUI
+    RUNTIME DESTINATION .
+)
+
+# Install SDL3.dll alongside the executable
+install(FILES $<TARGET_FILE:SDL3::SDL3-shared>
+    DESTINATION .
+)
+
+# Create a custom target for packaging releases
+add_custom_target(package_release
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/FlightDynamicsGUI-Release
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:FlightDynamicsGUI> ${CMAKE_BINARY_DIR}/FlightDynamicsGUI-Release/
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:SDL3::SDL3-shared> ${CMAKE_BINARY_DIR}/FlightDynamicsGUI-Release/
+    COMMAND ${CMAKE_COMMAND} -E tar cfv ${CMAKE_BINARY_DIR}/FlightDynamicsGUI-Release.zip --format=zip ${CMAKE_BINARY_DIR}/FlightDynamicsGUI-Release
+    DEPENDS FlightDynamicsGUI
+    COMMENT "Creating release package..."
+)
