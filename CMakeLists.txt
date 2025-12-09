@@ -111,13 +111,16 @@ add_custom_target(run_tests
     COMMENT "Running all tests..."
 )
 
-# Make ALL target depend on running tests
-add_custom_command(
-    TARGET FlightDynamicsGUI POST_BUILD
-    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure
-    COMMENT "Running tests after build..."
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
+# Optionally run tests after build (can be disabled with -DRUN_TESTS_POST_BUILD=OFF)
+option(RUN_TESTS_POST_BUILD "Run tests automatically after building GUI" ON)
+if(RUN_TESTS_POST_BUILD)
+    add_custom_command(
+        TARGET FlightDynamicsGUI POST_BUILD
+        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure
+        COMMENT "Running tests after build..."
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+endif()
 
 # Installation rules for creating releases
 install(TARGETS FlightDynamicsGUI

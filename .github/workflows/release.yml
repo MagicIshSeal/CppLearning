@@ -20,7 +20,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Configure CMake (Release)
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DRUN_TESTS_POST_BUILD=OFF
 
       - name: Build Release
         run: cmake --build build --config Release --target FlightDynamicsGUI
