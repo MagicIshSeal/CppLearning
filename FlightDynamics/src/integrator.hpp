@@ -1,19 +1,10 @@
 #ifndef INTEGRATOR_HPP
 #define INTEGRATOR_HPP
 
-struct AircraftState {
-    double x;   // horizontal position [m]
-    double z;   // vertical position [m]
-    double V;   // speed [m/s]
-    double gamma; // flight path angle [rad]
-};
+#include "vec2.hpp"
 
-AircraftState eulerStep(AircraftState state,
-                        double L, double D, double W, double T,
-                        double mass, double dt);
-
-AircraftState trapezoidalStep(AircraftState state,
-                              double L, double D, double W, double T,
-                              double mass, double dt);
+// Generic RK4 integrator for position and velocity
+// Uses Runge-Kutta 4th order method (RK4)
+void integrateRK4(Vec2& position, Vec2& velocity, const Vec2& acceleration, double dt);
 
 #endif

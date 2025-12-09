@@ -6,6 +6,7 @@
 *.so
 *.dylib
 *.a
+*.ini
 
 # CMake build directories and cache
 build/

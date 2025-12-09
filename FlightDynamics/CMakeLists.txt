@@ -99,3 +99,11 @@ add_custom_target(run_tests
     DEPENDS atmos_tests aero_tests integrator_tests
     COMMENT "Running all tests..."
 )
+
+# Make ALL target depend on running tests
+add_custom_command(
+    TARGET FlightDynamicsGUI POST_BUILD
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    COMMENT "Running tests after build..."
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
