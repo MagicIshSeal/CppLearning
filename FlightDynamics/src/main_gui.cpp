@@ -101,6 +101,7 @@ int main(int, char**)
     float pid_ki = 0.001f;         // Integral gain
     float pid_kd = 0.01f;          // Derivative gain
     PIDController speed_pid(pid_kp, pid_ki, pid_kd, 0.0, 1.0);  // Output: throttle 0-1
+    float prev_pid_kp = pid_kp, prev_pid_ki = pid_ki, prev_pid_kd = pid_kd;  // Track gain changes
     
     // Autopilot - Altitude Control
     bool autopilot_altitude = false;  // Autopilot on/off
@@ -109,6 +110,7 @@ int main(int, char**)
     float alt_pid_ki = 0.001f;        // Integral gain
     float alt_pid_kd = 0.5f;          // Derivative gain
     PIDController altitude_pid(alt_pid_kp, alt_pid_ki, alt_pid_kd, -10.0, 15.0);  // Output: alpha -10 to 15 deg
+    float prev_alt_pid_kp = alt_pid_kp, prev_alt_pid_ki = alt_pid_ki, prev_alt_pid_kd = alt_pid_kd;  // Track gain changes
     
     // Flight path history
     std::vector<FlightPoint> flightPath;
@@ -175,8 +177,13 @@ int main(int, char**)
             
             // Autopilot: Speed control with PID
             if (autopilot_speed) {
-                // Update PID gains if changed by sliders
-                speed_pid = PIDController(pid_kp, pid_ki, pid_kd, 0.0, 1.0);
+                // Only recreate PID controller if gains changed (preserves internal state)
+                if (pid_kp != prev_pid_kp || pid_ki != prev_pid_ki || pid_kd != prev_pid_kd) {
+                    speed_pid = PIDController(pid_kp, pid_ki, pid_kd, 0.0, 1.0);
+                    prev_pid_kp = pid_kp;
+                    prev_pid_ki = pid_ki;
+                    prev_pid_kd = pid_kd;
+                }
                 
                 // PID updates throttle to maintain target speed
                 throttle = static_cast<float>(speed_pid.update(speed_setpoint, speed, dt));
@@ -184,8 +191,13 @@ int main(int, char**)
             
             // Autopilot: Altitude control with PID
             if (autopilot_altitude) {
-                // Update PID gains if changed by sliders
-                altitude_pid = PIDController(alt_pid_kp, alt_pid_ki, alt_pid_kd, -10.0, 15.0);
+                // Only recreate PID controller if gains changed (preserves internal state)
+                if (alt_pid_kp != prev_alt_pid_kp || alt_pid_ki != prev_alt_pid_ki || alt_pid_kd != prev_alt_pid_kd) {
+                    altitude_pid = PIDController(alt_pid_kp, alt_pid_ki, alt_pid_kd, -10.0, 15.0);
+                    prev_alt_pid_kp = alt_pid_kp;
+                    prev_alt_pid_ki = alt_pid_ki;
+                    prev_alt_pid_kd = alt_pid_kd;
+                }
                 
                 // PID updates angle of attack to maintain target altitude
                 alpha_deg = static_cast<float>(altitude_pid.update(altitude_setpoint, altitude, dt));
