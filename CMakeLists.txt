@@ -106,7 +106,7 @@ add_test(NAME PIDTests COMMAND pid_tests)
 
 # Custom target to run all tests
 add_custom_target(run_tests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure
     DEPENDS atmos_tests aero_tests integrator_tests pid_tests
     COMMENT "Running all tests..."
 )
@@ -114,7 +114,7 @@ add_custom_target(run_tests
 # Make ALL target depend on running tests
 add_custom_command(
     TARGET FlightDynamicsGUI POST_BUILD
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure
     COMMENT "Running tests after build..."
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
