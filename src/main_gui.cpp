@@ -19,12 +19,12 @@
 // Aircraft parameters
 struct Aircraft
 {
-    double mass = 120.0;       // kg
-    double S = 1.60;           // wing area [m^2]
-    double CL_alpha = 5.7;     // lift curve slope [1/rad]
-    double CD0 = 0.025;        // parasitic drag coefficient
-    double k = 0.04;           // induced drag factor
-    double maxThrust = 1000.0; // maximum thrust [N]
+    double mass = 120.0;      // kg
+    double S = 1.60;          // wing area [m^2]
+    double CL_alpha = 5.7;    // lift curve slope [1/rad]
+    double CD0 = 0.025;       // parasitic drag coefficient
+    double k = 0.04;          // induced drag factor
+    double maxThrust = 500.0; // maximum thrust [N]
 };
 
 // Flight history for visualization
@@ -87,15 +87,15 @@ int main(int, char **)
 
     // Simulation state - using Vec2 vectors
     Aircraft aircraft;
-    Vec2 position(0.0, 0.0);  // (x, z) position in m
-    Vec2 velocity(30.0, 0.0); // (x, z) velocity in m/s - start with horizontal velocity
+    Vec2 position(0.0, 0.0); // (x, z) position in m
+    Vec2 velocity(0.0, 0.0); // (x, z) velocity in m/s - start with horizontal velocity
 
     double t = 0.0;
     double dt = 0.016; // ~60 FPS
 
     // Control inputs
-    float throttle = 0.3f;  // Start with 30% throttle
-    float alpha_deg = 5.0f; // Start with 5 degree angle of attack
+    float throttle = 0.0f;  // Start with 0% throttle
+    float alpha_deg = 0.0f; // Start with 0 degree angle of attack
     bool paused = false;
     bool reset_requested = false;
 
@@ -197,7 +197,7 @@ int main(int, char **)
         if (reset_requested)
         {
             position = Vec2(0.0, 0.0);
-            velocity = Vec2(30.0, 0.0);
+            velocity = Vec2(0.0, 0.0);
             throttle = 0.3f;
             alpha_deg = 5.0f;
             t = 0.0;
@@ -291,9 +291,11 @@ int main(int, char **)
             if (position.y < 0.0)
             {
                 position.y = 0.0;
+                // Zero out vertical velocity if moving downward
                 if (velocity.y < 0.0)
                     velocity.y = 0.0;
-                if (velocity.magnitude() < 1.0)
+                // Apply simple ground friction when on ground and moving slowly
+                if (velocity.magnitude() < 0.1 && throttle < 0.01)
                     velocity = Vec2(0.0, 0.0);
             }
 
