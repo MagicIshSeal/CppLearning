@@ -24,7 +24,8 @@ public:
 
     // Control inputs
     float throttle;
-    float alpha_deg;
+    float pitch_deg; // Pitch angle (orientation of aircraft)
+    float alpha_deg; // Angle of attack (calculated)
     bool paused;
     bool reset_requested;
 
@@ -63,6 +64,7 @@ public:
           t(0.0),
           dt(0.016),
           throttle(0.0f),
+          pitch_deg(0.0f),
           alpha_deg(0.0f),
           paused(false),
           reset_requested(false),
@@ -97,7 +99,8 @@ public:
         position = Vec2(0.0, 0.0);
         velocity = Vec2(0.0, 0.0);
         throttle = 0.3f;
-        alpha_deg = 5.0f;
+        pitch_deg = 5.0f;
+        alpha_deg = 0.0f;
         t = 0.0;
         flightPath.clear();
         speed_pid.reset();

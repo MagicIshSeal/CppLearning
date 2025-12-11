@@ -79,7 +79,7 @@ inline void renderControlPanel(SimulationState &state, UIState &ui_state)
         ImGui::SameLine();
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[AUTO]");
     }
-    ImGui::SliderFloat("Angle of Attack (deg)", &state.alpha_deg, -10.0f, 15.0f, "%.1f");
+    ImGui::SliderFloat("Pitch Angle (deg)", &state.pitch_deg, -10.0f, 15.0f, "%.1f");
     if (state.autopilot_altitude)
     {
         ImGui::SameLine();
@@ -151,6 +151,8 @@ inline void renderControlPanel(SimulationState &state, UIState &ui_state)
     ImGui::Text("Distance:     %.1f m", state.position.x);
     ImGui::Text("Climb Angle:  %.2f deg", state.velocity.angle() * 180.0 / M_PI);
     ImGui::Text("Vertical Speed: %.1f m/s", state.velocity.y);
+    ImGui::Text("Pitch Angle:  %.1f deg", state.pitch_deg);
+    ImGui::Text("Angle of Attack: %.1f deg", state.alpha_deg);
 
     // Calculate current aerodynamic coefficients
     double current_alpha = state.alpha_deg * M_PI / 180.0;

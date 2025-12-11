@@ -43,11 +43,15 @@ inline void updatePhysics(SimulationState &state)
             state.prev_alt_pid_ki = state.alt_pid_ki;
             state.prev_alt_pid_kd = state.alt_pid_kd;
         }
-        state.alpha_deg = static_cast<float>(state.altitude_pid.update(state.altitude_setpoint, altitude, state.dt));
+        state.pitch_deg = static_cast<float>(state.altitude_pid.update(state.altitude_setpoint, altitude, state.dt));
     }
 
+    // Calculate angle of attack from pitch and velocity direction
     Vec2 velocityDir = (speed > 1e-6) ? state.velocity.normalized() : Vec2(1.0, 0.0);
-    double alpha = state.alpha_deg * M_PI / 180.0;
+    double velocity_angle = std::atan2(state.velocity.y, state.velocity.x); // Flight path angle
+    double pitch_rad = state.pitch_deg * M_PI / 180.0;
+    double alpha = pitch_rad - velocity_angle; // AoA = pitch - flight path angle
+    state.alpha_deg = static_cast<float>(alpha * 180.0 / M_PI);
 
     // Get atmospheric properties
     double rho = getDensity(std::max(0.0, altitude));
@@ -73,8 +77,9 @@ inline void updatePhysics(SimulationState &state)
     double W_mag = calcWeight(state.aircraft.mass, g);
     double T_mag = calcThrust(state.throttle, state.aircraft.maxThrust);
 
-    // Force vectors
-    Vec2 F_thrust = velocityDir.rotated(alpha) * T_mag;
+    // Force vectors (thrust aligned with pitch, lift/drag with velocity)
+    Vec2 thrust_dir(std::cos(pitch_rad), std::sin(pitch_rad));
+    Vec2 F_thrust = thrust_dir * T_mag;
     Vec2 F_drag = (speed > 1e-6) ? velocityDir * (-D_mag) : Vec2(0.0, 0.0);
     Vec2 F_lift = velocityDir.rotated(M_PI / 2.0) * L_mag;
     Vec2 F_weight(0.0, -W_mag);
