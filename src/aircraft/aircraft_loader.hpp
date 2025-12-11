@@ -1,11 +1,13 @@
 #pragma once
 
 #include "aircraft.hpp"
+#include "../aerodynamics/aero_data.hpp"
 #include <string>
 #include <fstream>
 #include <stdexcept>
 #include <sstream>
 #include <filesystem>
+#include <memory>
 
 // Simple JSON parser for aircraft configuration
 // Expects format: { "key": value, ... }
@@ -47,6 +49,28 @@ public:
         ac.CD0 = parseDouble(content, "CD0");
         ac.k = parseDouble(content, "k");
         ac.maxThrust = parseDouble(content, "maxThrust");
+
+        // Check for optional aeroDataFile field
+        std::string aeroFile = parseString(content, "aeroDataFile");
+        if (!aeroFile.empty())
+        {
+            ac.aeroDataFile = aeroFile;
+
+            // Try to load the aero data file
+            std::filesystem::path configDir = std::filesystem::path(filepath).parent_path();
+            std::filesystem::path aeroPath = configDir / aeroFile;
+
+            try
+            {
+                ac.aeroTable = std::make_shared<AeroDataTable>(AeroDataTable::loadFromCSV(aeroPath.string()));
+            }
+            catch (const std::exception &e)
+            {
+                // If loading fails, fall back to legacy parameters
+                // (Could also throw here if you want to enforce aero data)
+                ac.aeroTable = nullptr;
+            }
+        }
 
         return ac;
     }
@@ -98,5 +122,50 @@ private:
         {
             throw std::runtime_error("Failed to parse value for key '" + key + "': " + valueStr);
         }
+    }
+
+    static std::string parseString(const std::string &json, const std::string &key)
+    {
+        // Find the key in the JSON string
+        std::string searchKey = "\"" + key + "\"";
+        size_t keyPos = json.find(searchKey);
+        if (keyPos == std::string::npos)
+        {
+            return ""; // Key not found, return empty string
+        }
+
+        // Find the colon after the key
+        size_t colonPos = json.find(':', keyPos);
+        if (colonPos == std::string::npos)
+        {
+            return "";
+        }
+
+        // Skip whitespace after colon
+        size_t valueStart = colonPos + 1;
+        while (valueStart < json.length() && (json[valueStart] == ' ' || json[valueStart] == '\t' || json[valueStart] == '\n'))
+        {
+            valueStart++;
+        }
+
+        // Check if value is a string (starts with quote)
+        if (valueStart >= json.length() || json[valueStart] != '"')
+        {
+            return "";
+        }
+
+        // Find closing quote
+        size_t valueEnd = valueStart + 1;
+        while (valueEnd < json.length() && json[valueEnd] != '"')
+        {
+            valueEnd++;
+        }
+
+        if (valueEnd >= json.length())
+        {
+            return "";
+        }
+
+        return json.substr(valueStart + 1, valueEnd - valueStart - 1);
     }
 };

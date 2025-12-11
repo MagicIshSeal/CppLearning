@@ -152,15 +152,45 @@ inline void renderControlPanel(SimulationState &state, UIState &ui_state)
     ImGui::Text("Climb Angle:  %.2f deg", state.velocity.angle() * 180.0 / M_PI);
     ImGui::Text("Vertical Speed: %.1f m/s", state.velocity.y);
 
+    // Calculate current aerodynamic coefficients
+    double current_alpha = state.alpha_deg * M_PI / 180.0;
+    double current_CL, current_CD;
+    if (state.aircraft.hasAeroTable())
+    {
+        current_CL = calcCL(current_alpha, state.aircraft.aeroTable.get());
+        current_CD = calcCD(current_alpha, state.aircraft.aeroTable.get());
+    }
+    else
+    {
+        current_CL = calcCL(current_alpha, state.aircraft.CL_alpha);
+        current_CD = calcCD(current_CL, state.aircraft.CD0, state.aircraft.k);
+    }
+
+    ImGui::Text("Current CL:   %.3f", current_CL);
+    ImGui::Text("Current CD:   %.4f", current_CD);
+
     // Aircraft Info
     ImGui::Separator();
     ImGui::Text("Aircraft:");
     ImGui::Text("Mass:         %.0f kg", state.aircraft.mass);
     ImGui::Text("Wing Area:    %.1f m²", state.aircraft.S);
     ImGui::Text("Max Thrust:   %.0f N", state.aircraft.maxThrust);
-    ImGui::Text("CL_alpha:     %.2f", state.aircraft.CL_alpha);
-    ImGui::Text("CD0:          %.3f", state.aircraft.CD0);
-    ImGui::Text("k:            %.3f", state.aircraft.k);
+
+    // Show which aerodynamic model is in use
+    if (state.aircraft.hasAeroTable())
+    {
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Aero Model:   Table-based");
+        ImGui::Text("Data File:    %s", state.aircraft.aeroDataFile.c_str());
+        ImGui::Text("CL (@ %.1f°):  %.3f", state.alpha_deg, current_CL);
+        ImGui::Text("CD (@ %.1f°):  %.4f", state.alpha_deg, current_CD);
+    }
+    else
+    {
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Aero Model:   Legacy");
+        ImGui::Text("CL_alpha:     %.2f", state.aircraft.CL_alpha);
+        ImGui::Text("CD0:          %.3f", state.aircraft.CD0);
+        ImGui::Text("k:            %.3f", state.aircraft.k);
+    }
 
     // Aircraft Configuration Loader
     ImGui::Separator();

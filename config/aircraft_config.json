@@ -4,5 +4,6 @@
     "CL_alpha": 5.7,
     "CD0": 0.025,
     "k": 0.04,
-    "maxThrust": 500.0
+    "maxThrust": 500.0,
+    "aeroDataFile": "aero_default.csv"
 }

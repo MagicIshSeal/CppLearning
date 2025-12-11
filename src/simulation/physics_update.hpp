@@ -53,8 +53,19 @@ inline void updatePhysics(SimulationState &state)
     double rho = getDensity(std::max(0.0, altitude));
 
     // Calculate aerodynamic coefficients
-    double CL = calcCL(alpha, state.aircraft.CL_alpha);
-    double CD = calcCD(CL, state.aircraft.CD0, state.aircraft.k);
+    double CL, CD;
+    if (state.aircraft.hasAeroTable())
+    {
+        // Use table-based data
+        CL = calcCL(alpha, state.aircraft.aeroTable.get());
+        CD = calcCD(alpha, state.aircraft.aeroTable.get());
+    }
+    else
+    {
+        // Use legacy linear/parabolic model
+        CL = calcCL(alpha, state.aircraft.CL_alpha);
+        CD = calcCD(CL, state.aircraft.CD0, state.aircraft.k);
+    }
 
     // Calculate force magnitudes
     double L_mag = calcLift(rho, speed, state.aircraft.S, CL);
