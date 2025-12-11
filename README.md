@@ -1,14 +1,16 @@
 # Flight Dynamics Simulator
 
-A C++ flight dynamics simulation with both command-line and GUI interfaces. Features atmospheric modeling, aerodynamics calculations, numerical integration, and PID control systems.
+A C++ flight dynamics simulation with both command-line and GUI interfaces. Features realistic flight physics with elevator control, CSV-based aerodynamic data, atmospheric modeling, numerical integration, and PID control systems.
 
 ## Features
 
+- **Flight Physics**: Realistic pitch dynamics with elevator control, angle of attack calculation, and pitch rate modeling
+- **Aerodynamic Data**: Support for CSV-based lift/drag tables with linear extrapolation, plus legacy analytical models
 - **Atmospheric Modeling**: ISA (International Standard Atmosphere) calculations for temperature, pressure, and density at various altitudes
-- **Aerodynamics**: Lift and drag calculations using standard aerodynamic equations
 - **Numerical Integration**: Multiple integration methods (Euler, RK2, RK4) for solving differential equations
 - **PID Controller**: Proportional-Integral-Derivative controller with anti-windup and output limiting
-- **GUI Application**: Interactive interface built with Dear ImGui and SDL3
+- **GUI Application**: Interactive interface built with Dear ImGui and SDL3 with real-time visualization
+- **Aircraft Configuration**: JSON-based aircraft configs with automatic discovery and loading
 - **Comprehensive Testing**: Full test suite using Catch2 framework
 
 ## Project Structure
@@ -16,13 +18,38 @@ A C++ flight dynamics simulation with both command-line and GUI interfaces. Feat
 ```
 CppLearning/
 ├── src/                    # Source code
-│   ├── atmosphere.*        # Atmospheric calculations
-│   ├── aero.*              # Aerodynamics models
-│   ├── integrator.*        # Numerical integration methods
-│   ├── pid.*               # PID controller
-│   ├── vec2.hpp            # 2D vector utilities
+│   ├── core/               # Core utilities
+│   │   ├── vec2.hpp        # 2D vector math
+│   │   └── integrator.*    # Numerical integration
+│   ├── aircraft/           # Aircraft definitions
+│   │   ├── aircraft.hpp    # Aircraft class
+│   │   └── aircraft_loader.hpp # JSON config loader
+│   ├── aerodynamics/       # Aerodynamics models
+│   │   ├── aero.*          # Force calculations
+│   │   └── aero_data.hpp   # CSV table interpolation
+│   ├── environment/        # Environmental models
+│   │   └── atmosphere.*    # ISA atmosphere
+│   ├── control/            # Control systems
+│   │   └── pid.*           # PID controller
+│   ├── simulation/         # Flight simulation
+│   │   ├── simulation_state.hpp
+│   │   └── physics_update.hpp
+│   ├── graphics/           # Rendering
+│   │   ├── camera.hpp
+│   │   ├── flight_renderer.hpp
+│   │   └── ui_panels.hpp
+│   ├── input/              # Input handling
+│   │   └── camera_input.hpp
+│   ├── utils/              # Utilities
+│   │   └── aircraft_config_manager.hpp
 │   ├── main.cpp            # Command-line application
-│   └── main_gui.cpp        # GUI application
+│   └── gui_main.cpp        # GUI application
+├── config/                 # Aircraft configurations
+│   ├── aircraft_config.json
+│   ├── aircraft_light.json
+│   ├── aircraft_heavy.json
+│   ├── aero_default.csv    # Aerodynamic data table
+│   └── AERO_DATA.md        # CSV format documentation
 ├── tests/                  # Unit tests
 │   ├── atmos_tests.cpp
 │   ├── aero_tests.cpp
@@ -118,7 +145,7 @@ ctest -C Debug --output-on-failure
 **Test Coverage:**
 
 - **Atmosphere Tests**: 5 assertions in 4 test cases
-- **Aero Tests**: 6 assertions in 6 test cases
+- **Aero Tests**: 11 assertions in 8 test cases (includes CSV table tests)
 - **Integrator Tests**: 50 assertions in 12 test cases
 - **PID Tests**: 243 assertions in 10 test cases
 
@@ -216,11 +243,39 @@ git submodule update --init --recursive
 
 ### Code Organization
 
-- **`atmosphere.*`**: Standard atmosphere calculations (ISA model)
-- **`aero.*`**: Aerodynamic force calculations (lift, drag)
-- **`integrator.*`**: Numerical integration (Euler, RK2, RK4)
-- **`pid.*`**: PID controller with configurable gains and limits
-- **`vec2.hpp`**: 2D vector math utilities
+**Core Modules:**
+
+- **`core/vec2.hpp`**: 2D vector math utilities
+- **`core/integrator.*`**: Numerical integration (Euler, RK2, RK4)
+
+**Aircraft:**
+
+- **`aircraft/aircraft.hpp`**: Aircraft class with physical and aerodynamic properties
+- **`aircraft/aircraft_loader.hpp`**: JSON configuration file parser
+
+**Aerodynamics:**
+
+- **`aerodynamics/aero.*`**: Lift and drag force calculations
+- **`aerodynamics/aero_data.hpp`**: CSV-based aerodynamic table with interpolation/extrapolation
+
+**Flight Dynamics:**
+
+- **`simulation/simulation_state.hpp`**: Central simulation state (position, velocity, control inputs)
+- **`simulation/physics_update.hpp`**: Flight physics including elevator → pitch rate → pitch angle → AoA
+
+**Control Systems:**
+
+- **`control/pid.*`**: PID controller with configurable gains and anti-windup
+
+**Graphics & UI:**
+
+- **`graphics/`**: Camera, flight rendering, and UI panels
+- **`input/`**: Mouse and keyboard input handling
+
+**Configuration:**
+
+- **`config/*.json`**: Aircraft configurations (mass, wing area, thrust, aerodynamic parameters)
+- **`config/*.csv`**: Aerodynamic coefficient tables (alpha, CL, CD)
 
 ### Adding New Features
 
