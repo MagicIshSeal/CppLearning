@@ -24,8 +24,10 @@ public:
 
     // Control inputs
     float throttle;
-    float pitch_deg; // Pitch angle (orientation of aircraft)
-    float alpha_deg; // Angle of attack (calculated)
+    float elevator;   // Elevator control stick (-1 to +1, + is nose up)
+    float pitch_deg;  // Pitch angle (orientation of aircraft)
+    float pitch_rate; // Pitch rate (deg/s)
+    float alpha_deg;  // Angle of attack (calculated)
     bool paused;
     bool reset_requested;
 
@@ -64,7 +66,9 @@ public:
           t(0.0),
           dt(0.016),
           throttle(0.0f),
+          elevator(0.0f),
           pitch_deg(0.0f),
+          pitch_rate(0.0f),
           alpha_deg(0.0f),
           paused(false),
           reset_requested(false),
@@ -99,7 +103,9 @@ public:
         position = Vec2(0.0, 0.0);
         velocity = Vec2(0.0, 0.0);
         throttle = 0.3f;
+        elevator = 0.0f;
         pitch_deg = 5.0f;
+        pitch_rate = 0.0f;
         alpha_deg = 0.0f;
         t = 0.0;
         flightPath.clear();
